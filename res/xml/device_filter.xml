@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <!-- U-Blox's NEO-6Q VID and PID (class 2 = Communication)-->
+    <!-- usb-device vendor-id="1546" product-id="01a6" class="2" subclass="0" protocol="0" / -->
+    <usb-device vendor-id="1546" product-id="01a6" />
+</resources>
