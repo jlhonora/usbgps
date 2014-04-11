@@ -3,5 +3,6 @@
 <resources>
     <!-- U-Blox's NEO-6Q VID and PID (class 2 = Communication)-->
     <!-- usb-device vendor-id="1546" product-id="01a6" class="2" subclass="0" protocol="0" / -->
-    <usb-device vendor-id="1546" product-id="01a6" />
+    <!-- VID and PID in decimal format /-->
+    <usb-device vendor-id="5446" product-id="0422" />
 </resources>
