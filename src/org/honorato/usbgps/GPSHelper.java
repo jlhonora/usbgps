@@ -21,7 +21,7 @@ public class GPSHelper {
 
 	private static final String TAG = "GPSHelper";
 	Context ctx;
-
+	PendingIntent mPermissionIntent;
 	UsbManager manager;
 
 	private byte[] bytes = new byte[1024];
@@ -32,9 +32,10 @@ public class GPSHelper {
 		this.ctx = ctx;
 		this.manager = (UsbManager) this.ctx.getSystemService(Context.USB_SERVICE);
 
-		PendingIntent mPermissionIntent = PendingIntent.getBroadcast(this.ctx, 0, new Intent(ACTION_USB_PERMISSION), 0);
+		mPermissionIntent = PendingIntent.getBroadcast(this.ctx, 0, new Intent(ACTION_USB_PERMISSION), 0);
 		IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 		this.ctx.registerReceiver(mUsbReceiver, filter);
+		
 	}
 
 	public static boolean isListEmpty(List<UsbDevice> devices) {
@@ -68,6 +69,7 @@ public class GPSHelper {
 			return null;
 		}
 		UsbDevice dev = devices.get(0);
+		this.manager.requestPermission(dev, mPermissionIntent);
 		Log.d(TAG, "N interfaces: " + dev.getInterfaceCount());
 		return dev;
 	}
