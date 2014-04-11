@@ -49,7 +49,9 @@ public class MainActivity extends Activity {
 	
 	protected void initGPS() {
 		this.helper = new GPSHelper(this);
-		renderUSBDevices(helper.scan());
+		List<UsbDevice> devices = helper.scan();
+		renderUSBDevices(devices);
+		UsbDevice dev = this.helper.setupAnyDevice(devices);
 	}
 	
 	protected void renderUSBDevices(List<UsbDevice> devices) {
