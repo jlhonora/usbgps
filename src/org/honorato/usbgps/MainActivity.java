@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	
-	GPSHelper helper;
+	GPSHelper mGpsHelper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,18 +40,26 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				if (helper != null) {
-					renderUSBDevices(helper.scan());
+				if (mGpsHelper != null) {
+					renderUSBDevices(mGpsHelper.scan());
+				}
+			}
+		});
+		
+		Button readButton = (Button) this.findViewById(R.id.button_read);
+		readButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (mGpsHelper != null) {
+					mGpsHelper.read();
 				}
 			}
 		});
 	}
 	
 	protected void initGPS() {
-		this.helper = new GPSHelper(this);
-		List<UsbDevice> devices = helper.scan();
-		renderUSBDevices(devices);
-		UsbDevice dev = this.helper.setupAnyDevice(devices);
+		this.mGpsHelper = new GPSHelper(this);
 	}
 	
 	protected void renderUSBDevices(List<UsbDevice> devices) {
@@ -104,6 +112,12 @@ public class MainActivity extends Activity {
 					false);
 			return rootView;
 		}
+	}
+	
+	@Override
+	public void onDestroy() {
+		this.mGpsHelper.closeUsbSerial();
+		super.onDestroy();
 	}
 
 }
