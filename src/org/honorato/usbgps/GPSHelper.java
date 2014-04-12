@@ -1,5 +1,6 @@
 package org.honorato.usbgps;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,11 +12,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
+
+import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialProber;
 
 public class GPSHelper {
 
@@ -32,10 +33,10 @@ public class GPSHelper {
 		this.ctx = ctx;
 		this.manager = (UsbManager) this.ctx.getSystemService(Context.USB_SERVICE);
 
-		mPermissionIntent = PendingIntent.getBroadcast(this.ctx, 0, new Intent(ACTION_USB_PERMISSION), 0);
-		IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-		this.ctx.registerReceiver(mUsbReceiver, filter);
-		
+		//mPermissionIntent = PendingIntent.getBroadcast(this.ctx, 0, new Intent(ACTION_USB_PERMISSION), 0);
+		//IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+		//this.ctx.registerReceiver(mUsbReceiver, filter);
+
 	}
 
 	public static boolean isListEmpty(List<UsbDevice> devices) {
@@ -63,38 +64,50 @@ public class GPSHelper {
 		return devices;
 	}
 
-	public UsbDevice setupAnyDevice(List<UsbDevice> devices) {
-		if (GPSHelper.isListEmpty(devices)) {
-			Log.d(TAG, "No devices");
-			return null;
-		}
-		UsbDevice dev = devices.get(0);
-		this.manager.requestPermission(dev, mPermissionIntent);
-		Log.d(TAG, "N interfaces: " + dev.getInterfaceCount());
-		return dev;
-	}
-
 	public void closeConnection(UsbDevice dev) {
 		if (dev == null) {
 			return;
 		}
 	}
 
-	public void performIO(UsbDevice dev, int endpointIndex) {
-		if (dev == null) {
-			return;
+	public void performIO() {
+		Log.d(TAG, "Reading");
+		// Find the first available driver.
+		UsbSerialDriver driver = UsbSerialProber.acquire(manager);
+
+		if (driver != null) {
+			try {
+				driver.open();
+				driver.setBaudRate(115200);
+
+				byte buffer[] = new byte[100];
+				int numBytesRead = driver.read(buffer, 100);
+				Log.d(TAG, "Read " + numBytesRead + " bytes.");
+				Log.d(TAG, byte2str(buffer));
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				try {
+				driver.close();
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			Log.d(TAG, "Driver is null");
 		}
-		try {
-			UsbInterface intf = dev.getInterface(0);
-			Log.d(TAG, "N endpoints: " + intf.getEndpointCount());
-			UsbEndpoint endpoint = intf.getEndpoint(0);
-			UsbDeviceConnection connection = this.manager.openDevice(dev); 
-			connection.claimInterface(intf, forceClaim);
-			connection.bulkTransfer(endpoint, bytes, bytes.length, TIMEOUT);
-			Log.d(TAG, "Bytes: " + bytes);
-		} catch (Throwable e) {
-			e.printStackTrace();
+	}
+
+	public String byte2str(byte[] bytes) {
+		String res = "";
+		for (byte c : bytes) {
+			if (c < 32 || c > 126) {
+				res += String.format("%02x ", c);
+			} else {
+				res += String.format("%c ", c);
+			}
 		}
+		return res;
 	}
 
 	private static final String ACTION_USB_PERMISSION =
@@ -111,7 +124,7 @@ public class GPSHelper {
 
 					if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
 						if(device != null){
-							performIO(device, 0);
+							
 						}
 					} 
 					else {

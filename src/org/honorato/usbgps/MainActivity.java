@@ -45,13 +45,23 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
+		
+		Button readButton = (Button) this.findViewById(R.id.button_read);
+		readButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (helper != null) {
+					helper.performIO();
+				}
+			}
+		});
 	}
 	
 	protected void initGPS() {
 		this.helper = new GPSHelper(this);
 		List<UsbDevice> devices = helper.scan();
 		renderUSBDevices(devices);
-		UsbDevice dev = this.helper.setupAnyDevice(devices);
 	}
 	
 	protected void renderUSBDevices(List<UsbDevice> devices) {

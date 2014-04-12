@@ -3,6 +3,7 @@
 
     <string name="app_name">USBGPS</string>
     <string name="scan">Scan</string>
+    <string name="read">Read</string>
     <string name="action_settings">Settings</string>
     <string name="no_devices_found">No devices found</string>
 
